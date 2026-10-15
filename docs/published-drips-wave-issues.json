@@ -1,0 +1,362 @@
+[
+  {
+    "id": 1,
+    "number": 523,
+    "title": "[200 pts] [BACKEND] Migrate Ingestion Watcher from Polling to Horizon Server-Sent Events (SSE) Stream",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/523"
+  },
+  {
+    "id": 2,
+    "number": 524,
+    "title": "[200 pts] [BACKEND] Implement Persistent Cursor Tracking Table in Prisma Schema",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/524"
+  },
+  {
+    "id": 3,
+    "number": 525,
+    "title": "[200 pts] [BACKEND] Build Multi-Asset Balance & Soroban Asset Contract (SAC) Decoders",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/525"
+  },
+  {
+    "id": 5,
+    "number": 526,
+    "title": "[200 pts] [API] Implement Webhook Alert Endpoint Management API",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/526"
+  },
+  {
+    "id": 8,
+    "number": 527,
+    "title": "[200 pts] [DATABASE] Configure PostgreSQL Read Replicas & Connection Pooling",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/527"
+  },
+  {
+    "id": 9,
+    "number": 528,
+    "title": "[200 pts] [BLOCKCHAIN] Soroban RPC Contract Event Parser Integration",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/528"
+  },
+  {
+    "id": 11,
+    "number": 529,
+    "title": "[200 pts] [SECURITY] HMAC SHA256 Webhook Payload Cryptographic Signer",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/529"
+  },
+  {
+    "id": 12,
+    "number": 530,
+    "title": "[200 pts] [SECURITY] Base32 CRC16-XMODEM StrKey Public Key Validation Guard",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/530"
+  },
+  {
+    "id": 13,
+    "number": 531,
+    "title": "[200 pts] [SECURITY] Single-Use Token Invalidation & Expiration Guard for Magic Links",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/531"
+  },
+  {
+    "id": 14,
+    "number": 532,
+    "title": "[200 pts] [SECURITY] JWT Session Token Revocation & Redis Blocklist",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/532"
+  },
+  {
+    "id": 15,
+    "number": 533,
+    "title": "[200 pts] [API] Payment Aggregate Volume & Statistics REST Endpoints",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/533"
+  },
+  {
+    "id": 16,
+    "number": 534,
+    "title": "[200 pts] [BACKEND] Telegram Bot Notification Worker Dispatcher",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/534"
+  },
+  {
+    "id": 17,
+    "number": 535,
+    "title": "[200 pts] [BACKEND] Email Notification Worker Dispatcher via Resend API",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/535"
+  },
+  {
+    "id": 20,
+    "number": 536,
+    "title": "[200 pts] [RELIABILITY] Graceful Process Shutdown Handler for API and Watcher",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/536"
+  },
+  {
+    "id": 21,
+    "number": 537,
+    "title": "[200 pts] [DATABASE] Database Connection Retry Strategy with Exponential Backoff",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/537"
+  },
+  {
+    "id": 22,
+    "number": 538,
+    "title": "[200 pts] [RELIABILITY] Horizon SSE Stream Heartbeat & Auto-Reconnect Fallback",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/538"
+  },
+  {
+    "id": 23,
+    "number": 539,
+    "title": "[200 pts] [RELIABILITY] Dead Letter Queue (DLQ) for Failed Notification Dispatches",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/539"
+  },
+  {
+    "id": 25,
+    "number": 540,
+    "title": "[200 pts] [API] Webhook Delivery Audit Log Persistence",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/540"
+  },
+  {
+    "id": 26,
+    "number": 541,
+    "title": "[200 pts] [RELIABILITY] Circuit Breaker Pattern for External HTTP Targets",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/541"
+  },
+  {
+    "id": 27,
+    "number": 542,
+    "title": "[200 pts] [FRONTEND] Refactor Web Dashboard into Modular React Components",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/542"
+  },
+  {
+    "id": 31,
+    "number": 543,
+    "title": "[200 pts] [FRONTEND] Passwordless Magic Link Authentication Flow UI (/verify)",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/543"
+  },
+  {
+    "id": 35,
+    "number": 544,
+    "title": "[200 pts] [FRONTEND] Notification Preference Configuration Modal UI",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/544"
+  },
+  {
+    "id": 10,
+    "number": 545,
+    "title": "[200 pts] [BACKEND] BullMQ Redis Alert Queue & Asynchronous Message Dispatcher",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/545"
+  },
+  {
+    "id": 36,
+    "number": 546,
+    "title": "[200 pts] [CI/CD] GitHub Actions Automated Build, Typecheck & Test Pipeline",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/546"
+  },
+  {
+    "id": 43,
+    "number": 547,
+    "title": "[200 pts] [SOROBAN] Build Soroban Contract State Snapshot & Historical Event Backfill Engine",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/547"
+  },
+  {
+    "id": 44,
+    "number": 548,
+    "title": "[200 pts] [SOROBAN] Implement Multi-Contract Subscription Router for Soroban WASM Events",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/548"
+  },
+  {
+    "id": 45,
+    "number": 549,
+    "title": "[200 pts] [SOROBAN] Soroban Asset Contract (SAC) Decimals & Metadata Auto-Discovery Cache",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/549"
+  },
+  {
+    "id": 46,
+    "number": 550,
+    "title": "[200 pts] [SOROBAN] On-Chain Alert Registry Rust Contract Access Control & Admin Governance",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/550"
+  },
+  {
+    "id": 47,
+    "number": 551,
+    "title": "[200 pts] [SOROBAN] Soroban Transaction Footprint & Storage Fee Estimation Calculator Service",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/551"
+  },
+  {
+    "id": 48,
+    "number": 552,
+    "title": "[200 pts] [SECURITY] Mutex-Based Multi-Thread Lock Guard for Wallet Transaction Processing",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/552"
+  },
+  {
+    "id": 50,
+    "number": 553,
+    "title": "[200 pts] [SECURITY] Webhook Replay Attack Prevention via Timestamped HMAC Nonces",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/553"
+  },
+  {
+    "id": 51,
+    "number": 554,
+    "title": "[200 pts] [SECURITY] Encrypted Secret Vault Middleware for Storing Webhook Keys (AES-256-GCM)",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/554"
+  },
+  {
+    "id": 53,
+    "number": 555,
+    "title": "[200 pts] [RELIABILITY] Horizon SSE Multi-Node Failover Cluster Watcher Engine",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/555"
+  },
+  {
+    "id": 54,
+    "number": 556,
+    "title": "[200 pts] [RELIABILITY] Redis Sentinel Automatic Master Failover & Queue Resiliency Handler",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/556"
+  },
+  {
+    "id": 55,
+    "number": 557,
+    "title": "[200 pts] [RELIABILITY] Adaptive Backoff Rate Limiter for Downstream Notification Webhooks",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/557"
+  },
+  {
+    "id": 56,
+    "number": 558,
+    "title": "[200 pts] [RELIABILITY] Automated Database Read-Replica Load Balancer & Failover Router",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/558"
+  },
+  {
+    "id": 57,
+    "number": 559,
+    "title": "[200 pts] [RELIABILITY] Self-Healing Worker Supervisor with Health Monitoring & Auto-Restart",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/559"
+  },
+  {
+    "id": 58,
+    "number": 560,
+    "title": "[200 pts] [FEATURES] Build Multi-Recipient Discord Webhook Alert Dispatcher with Embed Cards",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/560"
+  },
+  {
+    "id": 59,
+    "number": 561,
+    "title": "[200 pts] [FEATURES] Build Slack Workspace Interactive Bot App for Real-Time Payment Ingestion",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/561"
+  },
+  {
+    "id": 60,
+    "number": 562,
+    "title": "[200 pts] [FEATURES] Build WhatsApp Business API Multi-Language Notification Worker",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/562"
+  },
+  {
+    "id": 4,
+    "number": 563,
+    "title": "[150 pts] [SECURITY] Add Request Rate Limiting Middleware (@fastify/rate-limit)",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/563"
+  },
+  {
+    "id": 6,
+    "number": 564,
+    "title": "[150 pts] [DOCUMENTATION] Integrate Fastify Swagger & Scalar for OpenAPI Interactive Docs",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/564"
+  },
+  {
+    "id": 7,
+    "number": 565,
+    "title": "[150 pts] [SECURITY] Enforce Strict CORS Origin Controls and Security Headers",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/565"
+  },
+  {
+    "id": 18,
+    "number": 566,
+    "title": "[150 pts] [DEVOPS] Deep Health Inspection Probe (/health/deep)",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/566"
+  },
+  {
+    "id": 19,
+    "number": 567,
+    "title": "[150 pts] [LOGGING] Structured Pino Logging with Correlation IDs (x-request-id)",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/567"
+  },
+  {
+    "id": 24,
+    "number": 568,
+    "title": "[150 pts] [DATABASE] Payment Table txHash Unique Constraint Index Optimization",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/568"
+  },
+  {
+    "id": 30,
+    "number": 569,
+    "title": "[150 pts] [FRONTEND] Mobile Responsive Layout & Drawer Menu",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/569"
+  },
+  {
+    "id": 37,
+    "number": 570,
+    "title": "[150 pts] [TESTING] Automated Vitest Unit Test Suite Configuration",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/570"
+  },
+  {
+    "id": 40,
+    "number": 571,
+    "title": "[150 pts] [ARCHITECTURE] Shared Monorepo Package (@stellar-alerts/shared)",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/571"
+  },
+  {
+    "id": 93,
+    "number": 572,
+    "title": "[150 pts] [FEATURES] Build Custom Email HTML Template Builder & Preview Modal",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/572"
+  },
+  {
+    "id": 95,
+    "number": 573,
+    "title": "[150 pts] [FEATURES] Build Wallet Tagging & Custom Label Classification System API",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/573"
+  },
+  {
+    "id": 96,
+    "number": 574,
+    "title": "[150 pts] [FRONTEND] Build Keyboard Shortcuts Navigation & Quick Actions Command Palette (Cmd+K)",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/574"
+  },
+  {
+    "id": 28,
+    "number": 575,
+    "title": "[100 pts] [FRONTEND] Glassmorphism Dark Mode Design System Refinement",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/575"
+  },
+  {
+    "id": 29,
+    "number": 576,
+    "title": "[100 pts] [FRONTEND] Real-Time Payment Stream Live Indicator Badge",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/576"
+  },
+  {
+    "id": 32,
+    "number": 577,
+    "title": "[100 pts] [FRONTEND] Stellar Expert Block Explorer Link Generator",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/577"
+  },
+  {
+    "id": 34,
+    "number": 578,
+    "title": "[100 pts] [FRONTEND] Client-Side Search and Asset Filter Bar",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/578"
+  },
+  {
+    "id": 38,
+    "number": 579,
+    "title": "[100 pts] [DEVOPS] Local Development Docker Compose Stack for Postgres & Redis",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/579"
+  },
+  {
+    "id": 39,
+    "number": 580,
+    "title": "[100 pts] [DEVOPS] Turborepo Monorepo Pipeline Task Configuration",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/580"
+  },
+  {
+    "id": 41,
+    "number": 581,
+    "title": "[100 pts] [GOVERNANCE] GitHub Issue Templates & Pull Request Template",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/581"
+  },
+  {
+    "id": 33,
+    "number": 582,
+    "title": "[100 pts] [FRONTEND] Export Payment History to CSV and JSON",
+    "url": "https://github.com/stellar-alerts-labs/stellar-alerts/issues/582"
+  }
+]
