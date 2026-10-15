@@ -102,4 +102,36 @@ describe('WalletsController', () => {
       expect(error.message).toBe('Wallet not found');
     });
   });
+
+  describe('deleteWallet', () => {
+    it('returns success: true and forwards userId and walletId to service', async () => {
+      mockRequest = { user: { id: 'u-1' }, params: { id: 'w-1' } };
+      vi.mocked(walletsService.removeWallet).mockResolvedValue({ success: true });
+
+      await walletsController.deleteWallet(mockRequest, mockReply);
+
+      expect(walletsService.removeWallet).toHaveBeenCalledWith('u-1', 'w-1');
+      expect(mockReply.send).toHaveBeenCalledWith({ success: true });
+    });
+
+    it('returns 404 NotFoundError when the wallet does not belong to the user', async () => {
+      mockRequest = { user: { id: 'u-1' }, params: { id: 'w-other' } };
+      vi.mocked(walletsService.removeWallet).mockRejectedValue(new Error('Wallet not found'));
+
+      const error = await walletsController.deleteWallet(mockRequest, mockReply).catch((e) => e);
+
+      expect(error).toBeInstanceOf(NotFoundError);
+      expect(error.statusCode).toBe(404);
+      expect(error.message).toBe('Wallet not found');
+    });
+
+    it('returns 400 ValidationError when wallet id param is invalid', async () => {
+      mockRequest = { user: { id: 'u-1' }, params: { id: 123 } };
+
+      const error = await walletsController.deleteWallet(mockRequest, mockReply).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ValidationError);
+      expect(error.statusCode).toBe(400);
+    });
+  });
 });

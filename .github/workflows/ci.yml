@@ -2,9 +2,9 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, contribution ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, contribution ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,6 +35,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
+
+      - name: Verify No Merge Conflict Markers
+        run: |
+          if grep -rnE "^(<<<<<<<|=======|>>>>>>>)" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.next --exclude-dir=dist .; then
+            echo "::error::Unresolved merge conflict markers detected in repository!"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v7

@@ -101,8 +101,16 @@ export class WalletsService {
     };
   }
 
-  async removeWallet(id: string) {
-    console.log(`[WalletsService] Removing wallet ${id}`);
+  async removeWallet(userId: string, id: string) {
+    console.log(`[WalletsService] Removing wallet ${id} for user ${userId}`);
+    const wallet = await prisma.wallet.findUnique({
+      where: { id },
+    });
+
+    if (!wallet || wallet.userId !== userId) {
+      throw new Error('Wallet not found');
+    }
+
     try {
       await prisma.wallet.delete({
         where: { id },

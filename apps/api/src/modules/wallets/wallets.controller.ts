@@ -74,8 +74,9 @@ export class WalletsController {
       throw zodValidationError(parsed, 'Invalid parameters');
     }
 
+    const userId = (request as any).user.id;
     try {
-      await walletsService.removeWallet(parsed.data.id);
+      await walletsService.removeWallet(userId, parsed.data.id);
       return reply.send({ success: true });
     } catch (error: any) {
       if (error.message === 'Wallet not found') {

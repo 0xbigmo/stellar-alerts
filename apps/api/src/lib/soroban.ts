@@ -1,6 +1,7 @@
 import * as StellarSdk from 'stellar-sdk';
 import { getJson, setJson, getSacMetadataCacheKey, SAC_METADATA_TTL } from './cache';
 import { formatTokenAmount } from './stellar';
+import { env } from '../config/env';
 
 const SOROBAN_RPC_URL = process.env.SOROBAN_RPC_URL || 'https://soroban-testnet.stellar.org';
 const STELLAR_NETWORK_PASSPHRASE =

@@ -29,20 +29,24 @@ vi.mock('../../lib/prisma', () => ({
   },
 }));
 
-vi.mock('../../lib/stellar', () => ({
-  decodeHorizonAsset: vi.fn((record: any) => ({
-    assetCode: record?.asset_type === 'native' ? 'XLM' : record?.asset_code || 'XLM',
-    assetIssuer: record?.asset_issuer || null,
-  })),
-  stellar: {
-    server: {},
-    getRecentPayments: vi.fn().mockResolvedValue([]),
-    getPaymentsSince: vi.fn(),
-    getPaymentsSinceResult: vi.fn(),
-    getLatestPagingToken: vi.fn(),
-    openPaymentStream: vi.fn(),
-  },
-}));
+vi.mock('../../lib/stellar', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../lib/stellar')>();
+  return {
+    ...actual,
+    decodeHorizonAsset: vi.fn((record: any) => ({
+      assetCode: record?.asset_type === 'native' ? 'XLM' : record?.asset_code || 'XLM',
+      assetIssuer: record?.asset_issuer || null,
+    })),
+    stellar: {
+      server: {},
+      getRecentPayments: vi.fn().mockResolvedValue([]),
+      getPaymentsSince: vi.fn(),
+      getPaymentsSinceResult: vi.fn(),
+      getLatestPagingToken: vi.fn(),
+      openPaymentStream: vi.fn(),
+    },
+  };
+});
 
 vi.mock('../../lib/queue', () => ({
   enqueuePaymentAlert: vi.fn(),
@@ -610,16 +614,18 @@ describe('processPaymentRecord — persisted AlertRule evaluator', () => {
 
       await processPaymentRecord(wallet, sacRecord);
 
-      expect(prisma.payment.create).toHaveBeenCalledWith({
-        data: {
+      expect(prisma.payment.createMany).toHaveBeenCalledWith({
+        data: [{
           walletId: wallet.id,
           txHash: 'tx-sac-123',
           fromAddress: 'GBRPYHIL2CI3FNQ4BXLFMNDLFPPPU2HY4ZDM4T6VKFZ4MVEXDHJA5W5T',
           amount: 25,
           asset: 'USDC',
           assetIssuer: null,
+          memo: null,
           receivedAt: new Date('2026-08-24T12:00:00Z'),
-        },
+        }],
+        skipDuplicates: true,
       });
 
       expect(enqueuePaymentAlert).toHaveBeenCalledWith(

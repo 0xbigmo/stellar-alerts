@@ -1,7 +1,7 @@
 import { isValidEd25519PublicKey } from '@stellar-alerts/shared';
 import { env } from '../config/env';
 import { prisma, connectWithRetry } from '../lib/prisma';
-import { stellar, decodeHorizonAsset, parseSacTransferEvent } from '../lib/stellar';
+import { stellar, decodeHorizonAsset, parseSacTransferEvent, formatTokenAmount } from '../lib/stellar';
 import { enqueuePaymentAlert } from '../lib/queue';
 import { publishPaymentEvent } from '../lib/realtime';
 import {
@@ -10,6 +10,7 @@ import {
   getActiveContractIds,
   parseSorobanTransferEvent,
   routeEventToUsers,
+  getSacMetadata,
 } from '../lib/soroban';
 import { withWalletLock } from '../lib/lock';
 import { shouldAlert, PaymentContext } from '../lib/rules-engine';
@@ -99,19 +100,24 @@ export async function processPaymentRecord(
           span.end();
           return;
         }
-      } catch (err: any) {
-        console.warn(`[WatcherWorker] Error resolving SAC metadata for ${sacTransfer.contractId}:`, err?.message);
-      }
-    }
 
-    amount = formatTokenAmount(sacTransfer.rawAmount, decimals);
-    asset = symbol;
-    assetIssuer = sacTransfer.assetIssuer;
-    fromAddress = sacTransfer.from;
-  }
+        let decimals = 7;
+        let symbol = sacTransfer.assetCode ?? sacTransfer.contractId ?? "Unknown";
 
-        amount = sacTransfer.amount;
-        asset = sacTransfer.assetCode ?? sacTransfer.contractId ?? "Unknown";
+        if (sacTransfer.contractId) {
+          try {
+            const meta = await getSacMetadata(sacTransfer.contractId);
+            if (meta) {
+              decimals = meta.decimals;
+              symbol = meta.symbol || symbol;
+            }
+          } catch (err: any) {
+            console.warn(`[WatcherWorker] Error resolving SAC metadata for ${sacTransfer.contractId}:`, err?.message);
+          }
+        }
+
+        amount = formatTokenAmount(sacTransfer.rawAmount, decimals);
+        asset = symbol;
         assetIssuer = sacTransfer.assetIssuer;
         fromAddress = sacTransfer.from;
       }
@@ -218,16 +224,16 @@ export async function processPaymentRecord(
               { eventType: 'payment.realtime', aggregateId: persistedPayment.id, payload: eventPayload },
             ],
           });
-          isNewPayment = true;
-        } catch (err: unknown) {
-          const prismaErr = err as { code?: string };
-          if (prismaErr.code === 'P2002') {
-            // A concurrent processor (SSE stream + poll loop, or two
-            // overlapping bounded-backfill passes) inserted this payment
-            // first — reorg-like duplicate delivery, not a real error.
-            // Treat it as already recorded: don't re-alert.
-            log.info({ txHash }, '🔁 Duplicate payment insert raced and lost, skipping (already recorded)');
-            payment = await prisma.payment.findUnique({ where: { txHash } });
+        }
+
+        let cursorGap = { hasGap: false, ledgerDelta: 0 };
+        if (pagingToken) {
+          if (options.skipGapCheck) {
+            await tx.ingestionCursor.upsert({
+              where: { walletId: wallet.id },
+              create: { walletId: wallet.id, pagingToken },
+              update: { pagingToken, ...buildCursorSuccessUpdate() },
+            });
           } else {
             const previousPagingToken =
               options.previousPagingToken !== undefined
@@ -317,7 +323,20 @@ export async function processPaymentRecord(
               receivedAt: receivedAt.toISOString(),
             };
 
-            shouldSendAlert = shouldAlert(filterRules, paymentContext);
+            const result = await evaluateAndDispatch(event, {
+              findRules: async () => alertRules as unknown as AlertRuleRecord[],
+              hasDispatched: async (paymentId) =>
+                Boolean(await prisma.alertRuleDispatchLog.findUnique({ where: { paymentId } })),
+              recordDispatch: async (paymentId, matchedRuleIds) => {
+                await prisma.alertRuleDispatchLog.create({
+                  data: { paymentId, matchedRuleIds },
+                });
+              },
+              enqueueAlert: async () => enqueuePaymentAlert(alertJobPayload),
+            });
+
+            dispatched = result.enqueued;
+            span.setAttribute('payment.matchedAlertRules', result.matchedRuleIds.length);
 
             if (result.matchedRuleIds.length === 0) {
               log.info(
@@ -368,17 +387,11 @@ export async function processPaymentRecord(
         span.setAttribute('payment.enqueued', dispatched);
       }
 
-      const pagingToken = getHorizonPagingToken(record);
-      if (pagingToken) {
-        const gap = await saveCursor(wallet.id, pagingToken, {
-          skipGapCheck: options.skipGapCheck,
-          previousPagingToken: options.previousPagingToken,
-        });
-        if (gap.hasGap) {
-          span.setAttribute('cursor.gapDetected', true);
-          span.setAttribute('cursor.gapLedgerDelta', gap.ledgerDelta);
-          await recoverFromLedgerGap(wallet);
-        }
+      if (gap.hasGap) {
+        log.warn({ walletId: wallet.id, ledgerDelta: gap.ledgerDelta }, '⚠️ Ledger gap detected in ingestion cursor');
+        span.setAttribute('cursor.gapDetected', true);
+        span.setAttribute('cursor.gapLedgerDelta', gap.ledgerDelta);
+        await recoverFromLedgerGap(wallet);
       }
 
       span.setStatus({ code: SpanStatusCode.OK });
@@ -566,17 +579,20 @@ export async function processWalletPayments(wallet: { id: string; publicKey: str
         }
       }
 
-      if (records.length < CURSOR_PAGE_SIZE) return;
+      log.warn(
+        `[WatcherWorker] Catch-up page limit reached for ${wallet.publicKey.substring(0, 8)}..., resuming next poll from ${cursor}`,
+      );
+      span.setStatus({ code: SpanStatusCode.OK });
+      span.end();
+    } catch (err) {
+      span.setStatus({ code: SpanStatusCode.ERROR, message: String(err) });
+      span.end();
+      throw err;
     }
   });
 }
 
-    console.warn(
-      `[WatcherWorker] Catch-up page limit reached for ${wallet.publicKey.substring(0, 8)}..., resuming next poll from ${cursor}`
-    );
-  } finally {
-    await lock.release();
-  }
+export const handleStreamRecord = processPaymentRecord;
 
 export type StreamHandlerOptions = {
   onmessage: (record: HorizonOperationRecord) => Promise<void>;
@@ -700,11 +716,14 @@ export async function startHorizonSSEStream(
             resetHeartbeat();
             attempts = 1;
             console.log(`[WatcherStream] ⚡ Live SSE stream message received: ${record.type}`);
-            await processPaymentRecord(wallet, record, { previousPagingToken: lastPagingToken });
-            const token = getHorizonPagingToken(record);
-            if (token) {
-              lastPagingToken = token;
-            }
+            await enqueueMessage(async () => {
+              await processPaymentRecord(wallet, record, { previousPagingToken: lastPagingToken });
+              const token = getHorizonPagingToken(record);
+              if (token) {
+                lastPagingToken = token;
+              }
+              streamMetrics.messagesProcessed++;
+            });
           },
           onerror: (error: Error | unknown) => {
             const errMsg = error instanceof Error ? error.message : String(error);

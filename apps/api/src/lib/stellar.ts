@@ -3,7 +3,7 @@ import { isValidEd25519PublicKey } from '@stellar-alerts/shared';
 import { env } from '../config/env';
 import { stellarNetwork } from '../config/network';
 import { withDeadline } from './external-request';
-import { isHorizonOperationRecord, type HorizonOperationRecord } from '../types/horizon';
+import { isHorizonOperationRecord, asHorizonOperationRecords, type HorizonOperationRecord } from '../types/horizon';
 import type { SorobanRpcEvent } from '../types/soroban-event';
 
 // Configure global Horizon AxiosClient default timeout

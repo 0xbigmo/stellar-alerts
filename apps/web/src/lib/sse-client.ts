@@ -45,6 +45,8 @@ export function usePaymentStream(onPayment: (data: PaymentEvent) => void) {
     onPaymentRef.current = onPayment;
   }, [onPayment]);
 
+  const connectRef = useRef<() => void>(() => {});
+
   const connect = useCallback(() => {
     if (unmountedRef.current) return;
 
@@ -76,9 +78,15 @@ export function usePaymentStream(onPayment: (data: PaymentEvent) => void) {
       const delay = reconnectDelayRef.current;
       reconnectDelayRef.current = Math.min(delay * 2, RECONNECT_MAX_MS);
 
-      setTimeout(connect, delay);
+      setTimeout(() => {
+        connectRef.current();
+      }, delay);
     };
   }, []);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   useEffect(() => {
     unmountedRef.current = false;

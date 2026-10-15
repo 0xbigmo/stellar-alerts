@@ -208,10 +208,14 @@ When removing an existing occurrence, run `npm run quality:any:update` and commi
 
 ## 🤝 Submitting Pull Requests
 
-1. Push your feature branch to your fork or branch.
-2. Create a Pull Request against `main`.
-3. Fill out the included [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md).
-4. Maintainers will review and merge your PR once GitHub Actions CI status is green 🟢.
+> [!IMPORTANT]
+> **Target Branch Policy**: All contributor pull requests must target the `contribution` branch. Direct pull requests targeting `main` are automatically closed by our CI automation. Production releases are merged periodically from `contribution` into `main` by repository maintainers.
+
+1. Branch from `contribution` (`git checkout -b feat/my-feature origin/contribution`).
+2. Push your feature branch to your fork.
+3. Open a Pull Request targeting **base: `contribution`** (not `main`).
+4. Fill out the included [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md).
+5. Ensure all automated CI checks pass. Maintainers will review and merge into `contribution`.
 
 ---
 

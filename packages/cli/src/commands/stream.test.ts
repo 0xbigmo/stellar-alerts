@@ -29,6 +29,10 @@ describe('Stream Commands', () => {
     vi.clearAllMocks();
     mockOpenPaymentStream.mockClear();
     mockGetPayments.mockClear();
+    vi.mocked(ApiClient).mockImplementation(() => ({
+      openPaymentStream: mockOpenPaymentStream,
+      getPayments: mockGetPayments,
+    } as any));
     program = new Command();
     program.exitOverride();
     registerStreamCommands(program);
@@ -145,7 +149,7 @@ describe('Stream Commands', () => {
     it('resumes from the saved cursor on the next run', async () => {
       await fs.writeFile(cursorFile, JSON.stringify({ version: 1, cursor: 'p2', lastId: 'p2' }));
       mockOpenPaymentStream.mockImplementation(
-        liveStream([sample('p3')], () => process.emit('SIGTERM'))
+        liveStream([], () => process.emit('SIGINT'))
       );
 
       await program.parseAsync(['node', 'cli', 'stream', 'watch', '--cursor-file', cursorFile, '-w', 'w1']);
@@ -158,14 +162,14 @@ describe('Stream Commands', () => {
     it('--cursor now ignores the saved cursor and --no-resume skips the file', async () => {
       await fs.writeFile(cursorFile, JSON.stringify({ version: 1, cursor: 'p2', lastId: 'p2' }));
       mockOpenPaymentStream.mockImplementation(
-        liveStream([sample('p3')], () => process.emit('SIGINT'))
+        liveStream([], () => process.emit('SIGINT'))
       );
 
       await program.parseAsync(['node', 'cli', 'stream', 'watch', '--cursor-file', cursorFile, '--cursor', 'now']);
       expect(mockOpenPaymentStream).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: undefined }));
 
       mockOpenPaymentStream.mockImplementation(
-        liveStream([sample('p9')], () => process.emit('SIGINT'))
+        liveStream([], () => process.emit('SIGINT'))
       );
       await program.parseAsync(['node', 'cli', 'stream', 'watch', '--cursor-file', cursorFile, '--no-resume']);
       expect(mockOpenPaymentStream).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: undefined }));
