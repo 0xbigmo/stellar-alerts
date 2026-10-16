@@ -34,7 +34,7 @@ export class CryptoVault {
     return crypto.createHash('sha256').update(safeKey).digest();
   }
 
-  encrypt(plaintext: string): string {
+  encryptParts(plaintext: string): EncryptedSecretParts {
     const iv = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv('aes-256-gcm', this.currentKey, iv);
     const ciphertext = Buffer.concat([
@@ -43,23 +43,44 @@ export class CryptoVault {
     ]);
     const authTag = cipher.getAuthTag();
 
+    return {
+      version: this.currentVersion,
+      iv: iv.toString('base64'),
+      authTag: authTag.toString('base64'),
+      ciphertext: ciphertext.toString('base64'),
+    };
+  }
+
+  encrypt(plaintext: string): string {
+    const parts = this.encryptParts(plaintext);
     return [
-      this.currentVersion,
-      iv.toString('base64'),
-      authTag.toString('base64'),
-      ciphertext.toString('base64'),
+      parts.version,
+      parts.iv,
+      parts.authTag,
+      parts.ciphertext,
     ].join(SEPARATOR);
   }
 
-  decrypt(encrypted: string): string {
-    const parts = encrypted.split(SEPARATOR);
-    if (parts.length !== 4) {
+  decryptParts(parts: {
+    version?: string | number;
+    keyVersion?: string | number;
+    iv?: string;
+    secretIv?: string;
+    authTag?: string;
+    secretAuthTag?: string;
+    ciphertext?: string;
+    secretCiphertext?: string;
+  }): string {
+    const version = String(parts.version ?? parts.keyVersion ?? '');
+    const iv = parts.iv ?? parts.secretIv ?? '';
+    const authTag = parts.authTag ?? parts.secretAuthTag ?? '';
+    const ciphertext = parts.ciphertext ?? parts.secretCiphertext ?? '';
+
+    if (!version || !iv || !authTag || !ciphertext) {
       throw new Error('Invalid encrypted secret format');
     }
 
-    const [version, iv, authTag, ciphertext] = parts;
     const key = this.keys.get(version);
-
     if (!key) {
       throw new Error(`Unknown encryption key version: ${version}`);
     }
@@ -78,14 +99,48 @@ export class CryptoVault {
 
     return decrypted.toString('utf8');
   }
+
+  decrypt(encrypted: string): string {
+    const parts = encrypted.split(SEPARATOR);
+    if (parts.length !== 4) {
+      throw new Error('Invalid encrypted secret format');
+    }
+
+    const [version, iv, authTag, ciphertext] = parts;
+    return this.decryptParts({ version, iv, authTag, ciphertext });
+  }
+
+  reencrypt(encrypted: string): string {
+    const plaintext = this.decrypt(encrypted);
+    return this.encrypt(plaintext);
+  }
+
+  reencryptParts(parts: {
+    version?: string | number;
+    keyVersion?: string | number;
+    iv?: string;
+    secretIv?: string;
+    authTag?: string;
+    secretAuthTag?: string;
+    ciphertext?: string;
+    secretCiphertext?: string;
+  }): EncryptedSecretParts {
+    const plaintext = this.decryptParts(parts);
+    return this.encryptParts(plaintext);
+  }
 }
 
-const oldKeys = process.env.MASTER_ENCRYPTION_OLD_KEYS
-  ? JSON.parse(process.env.MASTER_ENCRYPTION_OLD_KEYS)
-  : {};
+let parsedOldKeys: Record<string, string> = {};
+try {
+  if (process.env.MASTER_ENCRYPTION_OLD_KEYS) {
+    parsedOldKeys = JSON.parse(process.env.MASTER_ENCRYPTION_OLD_KEYS);
+  }
+} catch (e) {
+  parsedOldKeys = {};
+}
 
 export const cryptoVault = new CryptoVault(
-  process.env.MASTER_ENCRYPTION_KEY!,
+  process.env.MASTER_ENCRYPTION_KEY || 'default_master_encryption_key_32bytes_long!',
   process.env.MASTER_ENCRYPTION_KEY_VERSION ?? '1',
-  oldKeys
+  parsedOldKeys
 );

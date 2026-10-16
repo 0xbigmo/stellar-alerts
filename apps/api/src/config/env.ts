@@ -9,6 +9,7 @@ const envSchema = z.object({
   REDIS_SENTINELS: z.string().optional(),
   REDIS_SENTINEL_MASTER_NAME: z.string().optional().default("mymaster"),
   REDIS_SENTINEL_PASSWORD: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional(),
   PORT: z.string().optional().default("3001"),
   MASTER_ENCRYPTION_KEY: z.string().min(32).describe('Master key for encrypting webhook secrets (AES-256-GCM)'),
   MASTER_ENCRYPTION_KEY_VERSION: z.string().optional().default("1"),
@@ -36,6 +37,39 @@ const envSchema = z.object({
 });
 export type Env = z.infer<typeof envSchema>;
 
+const defaultEnvFallback: Env = {
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/stellar_alerts",
+  READ_REPLICA_URL: undefined,
+  TELEGRAM_BOT_TOKEN: "dummy-telegram-bot-token",
+  JWT_SECRET: "dummy-jwt-secret-key-12345",
+  REDIS_URL: "redis://localhost:6379",
+  REDIS_SENTINELS: undefined,
+  REDIS_SENTINEL_MASTER_NAME: "mymaster",
+  REDIS_SENTINEL_PASSWORD: undefined,
+  REDIS_PASSWORD: undefined,
+  PORT: "3001",
+  MASTER_ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef",
+  MASTER_ENCRYPTION_KEY_VERSION: "1",
+  MASTER_ENCRYPTION_OLD_KEYS: "{}",
+  RATE_LIMIT_MAX: 100,
+  SOROBAN_RENT_WORKER_ENABLED: "true",
+  SOROBAN_RENT_WORKER_INTERVAL_MS: "60000",
+  SOROBAN_RENT_WORKER_SECRET: undefined,
+  SOROBAN_RENT_RENEWAL_THRESHOLD: "5000",
+  SOROBAN_RENT_TARGET_TTL: "10000",
+  SOROBAN_RENT_MAX_CONCURRENCY: "5",
+  SOROBAN_INDEXER_WORKER_ENABLED: "true",
+  SOROBAN_INDEXER_INTERVAL_MS: "15000",
+  SOROBAN_INDEXER_BACKFILL_WINDOW: "200",
+  SOROBAN_INDEXER_PAGE_SIZE: "200",
+  SOROBAN_INDEXER_BENCHMARK_INTERVAL_MS: "3600000",
+  SOROBAN_INDEXER_BENCHMARK_DATA_ROWS: "10000",
+  SOROBAN_STAKING_REWARD_WORKER_ENABLED: "true",
+  SOROBAN_SAC_WORKER_ENABLED: "true",
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318/v1/traces",
+  OTEL_SERVICE_NAME: "stellar-alerts-api",
+};
+
 const parseEnv = (): Env => {
   const envInput = {
     ...process.env,
@@ -44,9 +78,12 @@ const parseEnv = (): Env => {
     JWT_SECRET: process.env.JWT_SECRET || (process.env.NODE_ENV === 'test' || process.env.VITEST ? "dummy-jwt-secret-key-12345" : undefined),
     REDIS_URL: process.env.REDIS_URL || (process.env.NODE_ENV === 'test' || process.env.VITEST ? "redis://localhost:6379" : undefined),
     MASTER_ENCRYPTION_KEY: process.env.MASTER_ENCRYPTION_KEY || (process.env.NODE_ENV === 'test' || process.env.VITEST ? "0123456789abcdef0123456789abcdef" : undefined),
+    MASTER_ENCRYPTION_KEY_VERSION: process.env.MASTER_ENCRYPTION_KEY_VERSION || "1",
+    MASTER_ENCRYPTION_OLD_KEYS: process.env.MASTER_ENCRYPTION_OLD_KEYS || "{}",
     REDIS_SENTINELS: process.env.REDIS_SENTINELS,
     REDIS_SENTINEL_MASTER_NAME: process.env.REDIS_SENTINEL_MASTER_NAME || "mymaster",
     REDIS_SENTINEL_PASSWORD: process.env.REDIS_SENTINEL_PASSWORD,
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
     SOROBAN_RENT_WORKER_ENABLED: process.env.SOROBAN_RENT_WORKER_ENABLED || "true",
     SOROBAN_RENT_WORKER_INTERVAL_MS: process.env.SOROBAN_RENT_WORKER_INTERVAL_MS || "60000",
     SOROBAN_RENT_WORKER_SECRET: process.env.SOROBAN_RENT_WORKER_SECRET,
@@ -72,56 +109,10 @@ const parseEnv = (): Env => {
       process.exit(1);
     }
     // Return a typed fallback matching Env so downstream code has consistent shape
-    return {
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/stellar_alerts",
-      TELEGRAM_BOT_TOKEN: "dummy-telegram-bot-token",
-      JWT_SECRET: "dummy-jwt-secret-key-12345",
-      REDIS_URL: "redis://localhost:6379",
-      REDIS_SENTINELS: undefined,
-      REDIS_SENTINEL_MASTER_NAME: "mymaster",
-      REDIS_SENTINEL_PASSWORD: undefined,
-      PORT: "3001",
-      RATE_LIMIT_MAX: 100,
-      SOROBAN_RENT_WORKER_ENABLED: "true",
-      SOROBAN_RENT_WORKER_INTERVAL_MS: "60000",
-      SOROBAN_RENT_WORKER_SECRET: undefined,
-      SOROBAN_RENT_RENEWAL_THRESHOLD: "5000",
-      SOROBAN_RENT_TARGET_TTL: "10000",
-      SOROBAN_RENT_MAX_CONCURRENCY: "5",
-      SOROBAN_INDEXER_WORKER_ENABLED: "true",
-      SOROBAN_INDEXER_INTERVAL_MS: "15000",
-      SOROBAN_INDEXER_BACKFILL_WINDOW: "200",
-      SOROBAN_INDEXER_PAGE_SIZE: "200",
-      SOROBAN_INDEXER_BENCHMARK_INTERVAL_MS: "3600000",
-      SOROBAN_INDEXER_BENCHMARK_DATA_ROWS: "10000",
-      SOROBAN_STAKING_REWARD_WORKER_ENABLED: "true",
-    } as unknown as Env;
+    return defaultEnvFallback;
   }
 
-  return parsed.data || {
-    DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/stellar_alerts",
-    TELEGRAM_BOT_TOKEN: "dummy-telegram-bot-token",
-    JWT_SECRET: "dummy-jwt-secret-key-12345",
-    REDIS_URL: "redis://localhost:6379",
-    REDIS_SENTINELS: undefined,
-    REDIS_SENTINEL_MASTER_NAME: "mymaster",
-    REDIS_SENTINEL_PASSWORD: undefined,
-    PORT: "3001",
-    RATE_LIMIT_MAX: 100,
-    SOROBAN_RENT_WORKER_ENABLED: "true",
-    SOROBAN_RENT_WORKER_INTERVAL_MS: "60000",
-    SOROBAN_RENT_WORKER_SECRET: undefined,
-    SOROBAN_RENT_RENEWAL_THRESHOLD: "5000",
-    SOROBAN_RENT_TARGET_TTL: "10000",
-    SOROBAN_RENT_MAX_CONCURRENCY: "5",
-    SOROBAN_INDEXER_WORKER_ENABLED: "true",
-    SOROBAN_INDEXER_INTERVAL_MS: "15000",
-    SOROBAN_INDEXER_BACKFILL_WINDOW: "200",
-    SOROBAN_INDEXER_PAGE_SIZE: "200",
-    SOROBAN_INDEXER_BENCHMARK_INTERVAL_MS: "3600000",
-    SOROBAN_INDEXER_BENCHMARK_DATA_ROWS: "10000",
-    SOROBAN_STAKING_REWARD_WORKER_ENABLED: "true",
-  } as unknown as Env;
+  return parsed.data || defaultEnvFallback;
 };
 
 export const env = parseEnv();

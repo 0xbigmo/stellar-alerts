@@ -1,9 +1,9 @@
-const DEFAULT_BACKOFF_MS = 60_000;
-const MAX_BACKOFF_MS = 5 * 60_000;
+export const DEFAULT_BACKOFF_MS = 60_000;
+export const MAX_BACKOFF_MS = 5 * 60_000;
 
-type HeaderReader = Pick<Headers, "get"> | Record<string, string | number | null | undefined>;
+export type HeaderReader = Pick<Headers, "get"> | Record<string, string | number | null | undefined>;
 
-function readHeader(headers: HeaderReader | undefined, name: string): string | null {
+export function readHeader(headers: HeaderReader | undefined, name: string): string | null {
   if (!headers) return null;
 
   if (typeof (headers as Pick<Headers, "get">).get === "function") {
@@ -11,11 +11,18 @@ function readHeader(headers: HeaderReader | undefined, name: string): string | n
   }
 
   const record = headers as Record<string, string | number | null | undefined>;
-  const value = record[name] ?? record[name.toLowerCase()] ?? record[name.toUpperCase()];
-  return value === null || value === undefined ? null : String(value);
+  const lowerName = name.toLowerCase();
+
+  for (const [key, val] of Object.entries(record)) {
+    if (key.toLowerCase() === lowerName && val !== null && val !== undefined) {
+      return String(val);
+    }
+  }
+
+  return null;
 }
 
-function clampDelay(ms: number): number {
+export function clampDelay(ms: number): number {
   if (!Number.isFinite(ms) || ms <= 0) return DEFAULT_BACKOFF_MS;
   return Math.min(Math.ceil(ms), MAX_BACKOFF_MS);
 }
@@ -47,9 +54,12 @@ export function getAdaptiveBackoffMs(headers: HeaderReader | undefined, nowMs = 
   const retryAfterMs = parseRetryAfterMs(readHeader(headers, "retry-after"), nowMs);
   if (retryAfterMs !== null) return retryAfterMs;
 
-  const remaining = readHeader(headers, "x-ratelimit-remaining");
+  const resetAfterMs = parseRetryAfterMs(readHeader(headers, "x-ratelimit-reset-after"), nowMs);
+  if (resetAfterMs !== null) return resetAfterMs;
+
   const resetMs = parseRateLimitResetMs(readHeader(headers, "x-ratelimit-reset"), nowMs);
-  if (remaining === "0" && resetMs !== null) return resetMs;
+  const remaining = readHeader(headers, "x-ratelimit-remaining");
+  if (resetMs !== null && (remaining === "0" || remaining === null)) return resetMs;
 
   return DEFAULT_BACKOFF_MS;
 }
