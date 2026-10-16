@@ -1,0 +1,69 @@
+name: Enforce Contribution Branch
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, edited]
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  enforce-contribution-branch:
+    name: Enforce Contribution Branch on PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Source and Target Branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) return;
+
+            // Allow release PRs originating from the 'contribution' branch or hotfixes within the main repo
+            const isAllowedSource = 
+              (pr.head.ref === 'contribution' || pr.head.ref.startsWith('release/') || pr.head.ref.startsWith('hotfix/')) &&
+              pr.head.repo && pr.head.repo.full_name === context.payload.repository.full_name;
+
+            if (isAllowedSource) {
+              console.log(`Allowing PR #${pr.number} from authorized source branch: ${pr.head.ref}`);
+              return;
+            }
+
+            console.log(`Rejecting PR #${pr.number}: direct PRs to main are prohibited. Source: ${pr.head.ref}`);
+
+            const message = [
+              '### 🛑 Notice: Direct Pull Requests to `main` are Prohibited',
+              '',
+              'Thank you for contributing to **Stellar Alerts** during the **Drips Wave**! 🎉',
+              '',
+              'To preserve production stability and follow our release pipeline, **all contributor pull requests must target the `contribution` branch**, not `main`.',
+              '',
+              '---',
+              '',
+              '#### 🔄 How to redirect this PR to `contribution` (No need to create a new PR):',
+              '1. Scroll to the top of this Pull Request page.',
+              '2. Click the **Edit** button located to the right of the PR title.',
+              '3. In the branch selection dropdown, change the **base branch** from `main` to `contribution`.',
+              '4. Click **Save**, then click **Reopen Pull Request** at the bottom of the conversation.',
+              '',
+              `*For more details on our contribution workflow, please refer to [CONTRIBUTING.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md).*`
+            ].join('\n');
+
+            // Post explanation comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: message
+            });
+
+            // Automatically close the PR
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              state: 'closed'
+            });

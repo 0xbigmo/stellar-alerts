@@ -70,34 +70,61 @@ export function getRateLimitDomain(url: string): string {
   } catch {
     return url.toLowerCase();
   }
-}
 
-export class AdaptiveWebhookRateLimiter {
-  private readonly pausedUntilByDomain = new Map<string, number>();
+  /**
+   * Parse a 429 response's headers to determine how long to back off.
+   * Checks `Retry-After` first, then `X-RateLimit-Reset`.
+   * Falls back to a 60-second default if neither header is present.
+   */
+  handleRateLimitResponse(domain: string, headers: Headers): void {
+    const now = Date.now();
+    let unblockAt: number | undefined;
 
-  getDelayMs(url: string, nowMs = Date.now()): number {
-    const pausedUntil = this.pausedUntilByDomain.get(getRateLimitDomain(url));
-    if (!pausedUntil) return 0;
-
-    const delayMs = pausedUntil - nowMs;
-    if (delayMs <= 0) {
-      this.pausedUntilByDomain.delete(getRateLimitDomain(url));
-      return 0;
+    // --- Retry-After ---
+    const retryAfter = headers.get('Retry-After');
+    if (retryAfter !== null) {
+      const seconds = Number(retryAfter);
+      if (!isNaN(seconds) && isFinite(seconds)) {
+        // Integer seconds value
+        unblockAt = now + seconds * 1000;
+      } else {
+        // HTTP-date value (e.g. "Wed, 26 Aug 2026 10:00:00 GMT")
+        const parsed = Date.parse(retryAfter);
+        if (!isNaN(parsed)) {
+          unblockAt = parsed;
+        }
+      }
     }
 
-    return delayMs;
+    // --- X-RateLimit-Reset (Unix timestamp in seconds) ---
+    if (unblockAt === undefined) {
+      const rlReset = headers.get('X-RateLimit-Reset');
+      if (rlReset !== null) {
+        const ts = Number(rlReset);
+        if (!isNaN(ts) && isFinite(ts)) {
+          unblockAt = ts * 1000; // convert seconds -> ms
+        }
+      }
+    }
+
+    // --- Default fallback: 60 seconds ---
+    if (unblockAt === undefined) {
+      unblockAt = now + 60_000;
+    }
+
+    this.blockedUntil.set(domain, unblockAt);
   }
 
-  recordRateLimit(url: string, headers: HeaderReader | undefined, nowMs = Date.now()): number {
-    const delayMs = getAdaptiveBackoffMs(headers, nowMs);
-    this.pausedUntilByDomain.set(getRateLimitDomain(url), nowMs + delayMs);
-    return delayMs;
-  }
-
-  clear(url: string): void {
-    this.pausedUntilByDomain.delete(getRateLimitDomain(url));
+  /**
+   * Returns the number of milliseconds remaining until the block expires.
+   * Returns 0 if the domain is not blocked.
+   */
+  getRemainingMs(domain: string): number {
+    const until = this.blockedUntil.get(domain);
+    if (until === undefined) return 0;
+    const remaining = until - Date.now();
+    return remaining > 0 ? remaining : 0;
   }
 }
 
-export const adaptiveWebhookRateLimiter = new AdaptiveWebhookRateLimiter();
-export const waitForAdaptiveBackoff = (delayMs: number) => new Promise((resolve) => setTimeout(resolve, delayMs));
+export const adaptiveRateLimiter = new AdaptiveRateLimiter();

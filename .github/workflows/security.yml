@@ -2,9 +2,9 @@ name: Dependency Security Audit
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, contribution]
   push:
-    branches: [main]
+    branches: [main, contribution]
   schedule:
     - cron: '0 6 * * *'
 
@@ -20,7 +20,7 @@ permissions:
 jobs:
   osv-scan:
     name: OSV Dependency Vulnerability Scan
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.5.0
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.6.0
     with:
       scan-args: |-
         --config=osv-scanner.toml
